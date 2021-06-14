@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright Magmodules.eu. All rights reserved.
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Config:etc/system_file.xsd">
+    <system>
+        <section id="mollie_advanced">
+            <group id="multishipping" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1"
+                   showInStore="1">
+                <label>Multishipping</label>
+
+                <field id="enabled" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable multishipping</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/mollie_general/multishipping_enabled</config_path>
+                    <comment><![CDATA[Set to yes if you want to enable the Mollie Payment methods on multishipping orders.<br>Klarna is not supported on multishipping orders]]></comment>
+                </field>
+                <field id="description" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Transaction description</label>
+                    <config_path>payment/mollie_general/multishipping_description</config_path>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <comment><![CDATA[As multiple orders can be in the same transaction, create a new description for these transactions.]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

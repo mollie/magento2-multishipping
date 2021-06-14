@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright Magmodules.eu. All rights reserved.
+  ~ See COPYING.txt for license details.
+  -->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_submit_all_after">
+        <observer name="mollie_redirect_multishipping_order_to_the_checkout_url" instance="Mollie\Multishipping\Observer\CheckoutSubmitAllAfter\RedirectMolliePaymentToTheCheckoutUrl" />
+    </event>
+
+    <event name="mollie_checkout_success_redirect">
+        <observer name="mollie_redirect_to_multishipping_success_page" instance="Mollie\Multishipping\Observer\MollieCheckoutSuccessRedirect\RedirectToMultishippingSuccessPage"/>
+    </event>
+</config>

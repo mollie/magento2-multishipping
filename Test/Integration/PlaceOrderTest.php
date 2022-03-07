@@ -15,6 +15,7 @@ use Mollie\Api\Resources\Payment;
 use Mollie\Multishipping\PlaceOrder;
 use Mollie\Payment\Model\Client\Payments;
 use Mollie\Payment\Model\Mollie;
+use Mollie\Payment\Service\PaymentToken\PaymentTokenForOrder;
 use Mollie\Payment\Test\Integration\IntegrationTestCase;
 
 class PlaceOrderTest extends IntegrationTestCase
@@ -44,11 +45,15 @@ class PlaceOrderTest extends IntegrationTestCase
         $mollieModelMock = $this->createMock(Mollie::class);
         $mollieModelMock->method('getMollieApi')->willReturn($mollieApi);
 
+        $paymentTokenMock = $this->createMock(PaymentTokenForOrder::class);
+        $paymentTokenMock->method('execute')->willReturn(uniqid());
+
         /** @var PlaceOrder $instance */
         $instance = $this->objectManager->create(PlaceOrder::class, [
             'orderManagement' => $orderManagementMock,
             'molliePaymentsApi' => $this->createMock(Payments::class),
             'mollieModel' => $mollieModelMock,
+            'paymentTokenForOrder' => $paymentTokenMock,
         ]);
 
         $result = $instance->place($orders);

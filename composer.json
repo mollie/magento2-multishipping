@@ -41,7 +41,7 @@
   "require": {
     "magento/framework": ">=102.0.0",
     "mollie/mollie-api-php": "^2.1",
-    "mollie/magento2": "^1.25"
+    "mollie/magento2": "^1.25|^2.0"
   },
   "type": "magento2-module",
   "license": [

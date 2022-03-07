@@ -17,6 +17,7 @@ use Mollie\Payment\Model\Client\Payments;
 use Mollie\Payment\Model\Mollie;
 use Mollie\Payment\Service\Order\BuildTransaction;
 use Mollie\Payment\Service\Order\Transaction;
+use Mollie\Payment\Service\PaymentToken\PaymentTokenForOrder;
 
 class PlaceOrder implements PlaceOrderInterface
 {
@@ -70,6 +71,11 @@ class PlaceOrder implements PlaceOrderInterface
      */
     private $transactionDescription;
 
+    /**
+     * @var PaymentTokenForOrder
+     */
+    private $paymentTokenForOrder;
+
     public function __construct(
         OrderManagementInterface $orderManagement,
         Mollie $mollieModel,
@@ -79,7 +85,8 @@ class PlaceOrder implements PlaceOrderInterface
         MultishippingTransaction $multishippingTransaction,
         BuildTransaction $buildTransaction,
         CheckoutUrl $checkoutUrl,
-        TransactionDescription $transactionDescription
+        TransactionDescription $transactionDescription,
+        PaymentTokenForOrder $paymentTokenForOrder
     ) {
         $this->orderManagement = $orderManagement;
         $this->mollieModel = $mollieModel;
@@ -90,6 +97,7 @@ class PlaceOrder implements PlaceOrderInterface
         $this->buildTransaction = $buildTransaction;
         $this->checkoutUrl = $checkoutUrl;
         $this->transactionDescription = $transactionDescription;
+        $this->paymentTokenForOrder = $paymentTokenForOrder;
     }
 
     /**
@@ -163,7 +171,7 @@ class PlaceOrder implements PlaceOrderInterface
     private function buildPaymentData(array $orderList, $storeId): array
     {
         $firstOrder = reset($orderList);
-        $paymentToken = $this->mollieHelper->getPaymentToken();
+        $paymentToken = $this->paymentTokenForOrder->execute($firstOrder);
         $method = $this->mollieHelper->getMethodCode($firstOrder);
         $orderIds = array_map(function (OrderInterface $order) { return $order->getIncrementId(); }, $orderList);
 

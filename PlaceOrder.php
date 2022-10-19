@@ -7,6 +7,7 @@
 namespace Mollie\Multishipping;
 
 use Magento\Multishipping\Model\Checkout\Type\Multishipping\PlaceOrderInterface;
+use Magento\Payment\Helper\Data as PaymentHelper;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderManagementInterface;
 use Mollie\Multishipping\Service\CheckoutUrl;
@@ -21,6 +22,11 @@ use Mollie\Payment\Service\PaymentToken\PaymentTokenForOrder;
 
 class PlaceOrder implements PlaceOrderInterface
 {
+    /**
+     * @var PaymentHelper
+     */
+    protected $paymentHelper;
+
     /**
      * @var OrderManagementInterface
      */
@@ -86,7 +92,8 @@ class PlaceOrder implements PlaceOrderInterface
         BuildTransaction $buildTransaction,
         CheckoutUrl $checkoutUrl,
         TransactionDescription $transactionDescription,
-        PaymentTokenForOrder $paymentTokenForOrder
+        PaymentTokenForOrder $paymentTokenForOrder,
+        PaymentHelper $paymentHelper
     ) {
         $this->orderManagement = $orderManagement;
         $this->mollieModel = $mollieModel;
@@ -98,6 +105,7 @@ class PlaceOrder implements PlaceOrderInterface
         $this->checkoutUrl = $checkoutUrl;
         $this->transactionDescription = $transactionDescription;
         $this->paymentTokenForOrder = $paymentTokenForOrder;
+        $this->paymentHelper = $paymentHelper;
     }
 
     /**
@@ -107,13 +115,27 @@ class PlaceOrder implements PlaceOrderInterface
     public function place(array $orderList): array
     {
         try {
+            $mollieOrders = [];
             foreach ($orderList as $order) {
                 $this->orderManagement->place($order);
+                $methodInstance = $order->getPayment()
+                    ? $this->paymentHelper->getMethodInstance($order->getPayment()->getMethod())
+                    : null;
+                if ($methodInstance instanceof Mollie) {
+                    // Only process Mollie orders; some orders _could_ have been paid with 'free' method.
+                    $mollieOrders[] = $order;
+                }
             }
 
-            $firstOrder = reset($orderList);
+            if (count($mollieOrders) === 0) {
+                // This situation should not happen, as the quote would then have 'free' payment method.
+                // This class will then never be called. But to be sure...
+                return $this->errorList;
+            }
+
+            $firstOrder = reset($mollieOrders);
             $storeId = $firstOrder->getStoreId();
-            $paymentData = $this->buildPaymentData($orderList, $storeId);
+            $paymentData = $this->buildPaymentData($mollieOrders, $storeId);
 
             $paymentData = $this->mollieHelper->validatePaymentData($paymentData);
             $this->mollieHelper->addTolog('request', $paymentData);
@@ -133,7 +155,7 @@ class PlaceOrder implements PlaceOrderInterface
             return $errorList;
         }
 
-        foreach ($orderList as $order) {
+        foreach ($mollieOrders as $order) {
             try {
                 $this->molliePaymentsApi->processResponse($order, $paymentResponse);
             } catch (\Exception $exception) {

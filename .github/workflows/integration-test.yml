@@ -44,8 +44,8 @@ jobs:
       - name: Install Mollie and Mollie Multishipping extensions
         run: docker exec magento-project-community-edition composer require mollie/magento2:"dev-master as 2.99.99" mollie/magento2-multishipping:@dev -vvv
 
-      - name: Enable developer mode
-        run: docker exec magento-project-community-edition php bin/magento deploy:mode:set developer
+      - name: Enable modules
+        run: docker exec magento-project-community-edition bash -c "php bin/magento module:enable Mollie_Payment Mollie_Multishipping && php bin/magento setup:upgrade"
 
       - name: Run tests
         run: docker exec magento-project-community-edition bash -c "cd /data/dev/tests/integration/ && /data/vendor/bin/phpunit -c /data/dev/tests/integration/phpunit.xml"

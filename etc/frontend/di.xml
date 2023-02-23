@@ -18,6 +18,7 @@
                 <item name="mollie_methods_giftcard" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>
                 <item name="mollie_methods_giropay" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>
                 <item name="mollie_methods_ideal" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>
+                <item name="mollie_methods_in3" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>
                 <item name="mollie_methods_kbc" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>
                 <item name="mollie_methods_klarnapaylater" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>
                 <item name="mollie_methods_klarnasliceit" xsi:type="string">Mollie\Multishipping\PlaceOrder</item>

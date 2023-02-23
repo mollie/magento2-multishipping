@@ -29,7 +29,10 @@ class PlaceOrderTest extends IntegrationTestCase
 
         /** @var OrderInterface $order */
         foreach ($orders as $order) {
-            $order->setPayment($this->objectManager->create(OrderPaymentInterface::class)->setMethod('mollie_methods_ideal'));
+            $payment = $this->objectManager->create(OrderPaymentInterface::class);
+            $payment->setMethod('mollie_methods_ideal');
+
+            $order->setPayment($payment);
         }
 
         $orderManagementMock = $this->createMock(OrderManagementInterface::class);

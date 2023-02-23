@@ -163,7 +163,7 @@ class PlaceOrder implements PlaceOrderInterface
     }
 
     /**
-     * @param array $orderList
+     * @param OrderInterface[] $orderList
      * @param $storeId
      * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @return array
@@ -173,14 +173,14 @@ class PlaceOrder implements PlaceOrderInterface
         $firstOrder = reset($orderList);
         $paymentToken = $this->paymentTokenForOrder->execute($firstOrder);
         $method = $this->mollieHelper->getMethodCode($firstOrder);
-        $orderIds = array_map(function (OrderInterface $order) { return $order->getIncrementId(); }, $orderList);
+        $orderIds = array_map(function (OrderInterface $order) { return $order->getEntityId(); }, $orderList);
 
         $paymentData = [
             'amount' => $this->getTotalAmount($orderList),
             'description' => $this->transactionDescription->forMultishippingTransaction($storeId),
             'billingAddress' => $this->molliePaymentsApi->getAddressLine($firstOrder->getBillingAddress()),
             'redirectUrl' => $this->multishippingTransaction->getRedirectUrl($orderList, $paymentToken),
-            'webhookUrl' => $this->transaction->getWebhookUrl($storeId),
+            'webhookUrl' => $this->transaction->getWebhookUrl($orderList),
             'method' => $method,
             'metadata' => [
                 'order_ids' => implode(', ', $orderIds),

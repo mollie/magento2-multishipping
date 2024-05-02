@@ -1,11 +1,19 @@
 <?xml version="1.0"?>
 <!--
-  ~ Copyright Magmodules.eu. All rights reserved.
-  ~ See COPYING.txt for license details.
+  ~ /*
+  ~  * Copyright Magmodules.eu. All rights reserved.
+  ~  * See COPYING.txt for license details.
+  ~  */
   -->
 <payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Payment:etc/payment.xsd">
     <methods>
+        <method name="mollie_methods_alma">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
         <method name="mollie_methods_applepay">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="mollie_methods_bancomat">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
         <method name="mollie_methods_bancontact">
@@ -15,6 +23,12 @@
             <allow_multiple_address>1</allow_multiple_address>
         </method>
         <method name="mollie_methods_belfius">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="mollie_methods_billie">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="mollie_methods_blik">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
         <method name="mollie_methods_creditcard">
@@ -51,6 +65,9 @@
             <allow_multiple_address>1</allow_multiple_address>
         </method>
         <method name="mollie_methods_sofort">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
+        <method name="mollie_methods_twint">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
         <method name="mollie_methods_voucher">

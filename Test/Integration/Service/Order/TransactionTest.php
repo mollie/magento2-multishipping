@@ -1,5 +1,5 @@
 <?php
-/**
+/*
  * Copyright Magmodules.eu. All rights reserved.
  * See COPYING.txt for license details.
  */
@@ -22,12 +22,12 @@ class TransactionTest extends IntegrationTestCase
 
         /** @var MultishippingTransaction $instance */
         $instance = $this->objectManager->create(MultishippingTransaction::class);
-        $result = $instance->getRedirectUrl($orders, 'PAYMENT_TOKEN_TEST');
+        $result = $instance->getRedirectUrl($orders, ['PAYMENT_TOKEN_TEST']);
 
         $this->assertStringContainsString('order_ids[0]=777', urldecode($result));
         $this->assertStringContainsString('order_ids[1]=888', urldecode($result));
         $this->assertStringContainsString('order_ids[2]=999', urldecode($result));
-        $this->assertStringContainsString('payment_token=PAYMENT_TOKEN_TEST', urldecode($result));
+        $this->assertStringContainsString('payment_tokens[0]=PAYMENT_TOKEN_TEST', urldecode($result));
         $this->assertStringContainsString('utm_nooverride=1', urldecode($result));
     }
 
@@ -40,6 +40,6 @@ class TransactionTest extends IntegrationTestCase
 
         /** @var MultishippingTransaction $instance */
         $instance = $this->objectManager->create(MultishippingTransaction::class);
-        $instance->getRedirectUrl($orders, 'PAYMENT_TOKEN_TEST');
+        $instance->getRedirectUrl($orders, ['PAYMENT_TOKEN_TEST']);
     }
 }

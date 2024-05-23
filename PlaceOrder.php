@@ -16,6 +16,7 @@ use Mollie\Payment\Helper\General;
 use Mollie\Payment\Model\Client\Payments;
 use Mollie\Payment\Model\Mollie;
 use Mollie\Payment\Service\Order\BuildTransaction;
+use Mollie\Payment\Service\Order\MethodCode;
 use Mollie\Payment\Service\Order\Transaction;
 use Mollie\Payment\Service\PaymentToken\PaymentTokenForOrder;
 
@@ -75,6 +76,10 @@ class PlaceOrder implements PlaceOrderInterface
      * @var PaymentTokenForOrder
      */
     private $paymentTokenForOrder;
+    /**
+     * @var MethodCode
+     */
+    private $methodCode;
 
     public function __construct(
         OrderManagementInterface $orderManagement,
@@ -86,7 +91,8 @@ class PlaceOrder implements PlaceOrderInterface
         BuildTransaction $buildTransaction,
         CheckoutUrl $checkoutUrl,
         TransactionDescription $transactionDescription,
-        PaymentTokenForOrder $paymentTokenForOrder
+        PaymentTokenForOrder $paymentTokenForOrder,
+        MethodCode $methodCode
     ) {
         $this->orderManagement = $orderManagement;
         $this->mollieModel = $mollieModel;
@@ -98,6 +104,7 @@ class PlaceOrder implements PlaceOrderInterface
         $this->checkoutUrl = $checkoutUrl;
         $this->transactionDescription = $transactionDescription;
         $this->paymentTokenForOrder = $paymentTokenForOrder;
+        $this->methodCode = $methodCode;
     }
 
     /**
@@ -107,13 +114,24 @@ class PlaceOrder implements PlaceOrderInterface
     public function place(array $orderList): array
     {
         try {
+            $mollieOrders = [];
             foreach ($orderList as $order) {
                 $this->orderManagement->place($order);
+                if (substr($order->getPayment()->getMethod(), 0, 6) === 'mollie') {
+                    // Only process Mollie orders; some orders _could_ have been paid with 'free' method.
+                    $mollieOrders[] = $order;
+                }
             }
 
-            $firstOrder = reset($orderList);
+            if (count($mollieOrders) === 0) {
+                // This situation should not happen, as the quote would then have 'free' payment method.
+                // This class will then never be called. But to be sure...
+                return $this->errorList;
+            }
+
+            $firstOrder = reset($mollieOrders);
             $storeId = $firstOrder->getStoreId();
-            $paymentData = $this->buildPaymentData($orderList, $storeId);
+            $paymentData = $this->buildPaymentData($mollieOrders, $storeId);
 
             $paymentData = $this->mollieHelper->validatePaymentData($paymentData);
             $this->mollieHelper->addTolog('request', $paymentData);
@@ -133,7 +151,7 @@ class PlaceOrder implements PlaceOrderInterface
             return $errorList;
         }
 
-        foreach ($orderList as $order) {
+        foreach ($mollieOrders as $order) {
             try {
                 $this->molliePaymentsApi->processResponse($order, $paymentResponse);
             } catch (\Exception $exception) {
@@ -171,21 +189,21 @@ class PlaceOrder implements PlaceOrderInterface
     private function buildPaymentData(array $orderList, $storeId): array
     {
         $firstOrder = reset($orderList);
-        $paymentToken = $this->paymentTokenForOrder->execute($firstOrder);
-        $method = $this->mollieHelper->getMethodCode($firstOrder);
+        $paymentTokens = $this->getPaymentTokens($orderList);
+        $method = $this->methodCode->execute($firstOrder);
         $orderIds = array_map(function (OrderInterface $order) { return $order->getEntityId(); }, $orderList);
 
         $paymentData = [
             'amount' => $this->getTotalAmount($orderList),
             'description' => $this->transactionDescription->forMultishippingTransaction($storeId),
             'billingAddress' => $this->molliePaymentsApi->getAddressLine($firstOrder->getBillingAddress()),
-            'redirectUrl' => $this->multishippingTransaction->getRedirectUrl($orderList, $paymentToken),
+            'redirectUrl' => $this->multishippingTransaction->getRedirectUrl($orderList, $paymentTokens),
             'webhookUrl' => $this->transaction->getWebhookUrl($orderList),
             'method' => $method,
             'metadata' => [
                 'order_ids' => implode(', ', $orderIds),
                 'store_id' => $storeId,
-                'payment_token' => $paymentToken
+                'payment_token' => implode(', ', $paymentTokens),
             ],
             'locale' => $this->mollieHelper->getLocaleCode($storeId, Payments::CHECKOUT_TYPE),
         ];
@@ -200,5 +218,15 @@ class PlaceOrder implements PlaceOrderInterface
         }
 
         return $this->buildTransaction->execute($firstOrder, Payments::CHECKOUT_TYPE, $paymentData);
+    }
+
+    public function getPaymentTokens(array $orders): array
+    {
+        $output = [];
+        foreach ($orders as $order) {
+            $output[] = $this->paymentTokenForOrder->execute($order);
+        }
+
+        return $output;
     }
 }

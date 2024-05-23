@@ -40,7 +40,7 @@
   ],
   "require": {
     "magento/framework": ">=102.0.0",
-    "mollie/magento2": ">=2.22.0"
+    "mollie/magento2": ">=2.34.0"
   },
   "type": "magento2-module",
   "license": [

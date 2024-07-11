@@ -1,9 +1,7 @@
 <?php
 /*
- *
- *  * Copyright Magmodules.eu. All rights reserved.
- *  * See COPYING.txt for license details.
- *
+ * Copyright Magmodules.eu. All rights reserved.
+ * See COPYING.txt for license details.
  */
 
 declare(strict_types=1);
@@ -35,6 +33,7 @@ class PaymentXmlTest extends IntegrationTestCase
                         'mollie_methods_klarnapaynow',
                         'mollie_methods_klarnasliceit',
                         'mollie_methods_pointofsale',
+                        'mollie_methods_riverty',
                     ]
                 );
             }
